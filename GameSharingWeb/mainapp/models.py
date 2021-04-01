@@ -244,7 +244,6 @@ class Order(models.Model):
         return str(self.id)
 
 
-# ----------------------------------------------------------------------------------------------------------------------
 class GameCategory(models.Model):
     name = models.CharField(max_length=255, verbose_name='Имя категории')
     slug = models.SlugField(unique=True)
@@ -280,6 +279,7 @@ class GameBox(models.Model):
     status = models.CharField(max_length=100, verbose_name='Статус экземпляра', choices=STATUS_CHOICES,
                               default=STATUS_ON_STORAGE, blank=True)
     game = models.ForeignKey('Game', verbose_name='Игра', on_delete=models.CASCADE, null=True)
+    bag_room = models.ForeignKey('BagRoom', verbose_name='Камера хранения', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return "Коробка с {}".format(str(self.slug))
@@ -331,3 +331,42 @@ class GameGetProductsManager:
 
 class GameGetProducts:
     object = GameGetProductsManager()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class BagRoom(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Название')
+    address = models.CharField(max_length=255, verbose_name='Адрес')
+    slug = models.SlugField(unique=True)
+    rent = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Стоимость аренды')
+    cells = models.DecimalField(max_digits=4, decimal_places=0, verbose_name='Количество ячеек')
+    free_cells = models.DecimalField(max_digits=4, decimal_places=0, verbose_name='Количество свободных ячеек')
+
+    def __str__(self):
+        return self.name
+
+
+class Event(models.Model):
+    TYPE_BOOKED = 'booked'
+    TYPE_PASS_CHECK = 'passed check'
+    TYPE_PASS_CHECK_EMPLOYEE = 'passed check employee'
+    TYPE_NO_PASS_CHECK = 'no passed check'
+    TYPE_NO_PASS_CHECK_EMPLOYEE = 'no passed check employee'
+    TYPE_START_RENT = 'start rent'
+    TYPE_FINISH_RENT = 'finish rent'
+    TYPE_BUY = 'buy'
+
+    TYPE_CHOICES = (
+        (TYPE_BOOKED, 'Игра забронирована'),
+        (TYPE_PASS_CHECK, 'Игра прошла проверку клиентом'),
+        (TYPE_PASS_CHECK_EMPLOYEE, 'Игра прошла проверку сотрудником'),
+        (TYPE_NO_PASS_CHECK, 'Игра НЕ прошла проверку клиентом'),
+        (TYPE_NO_PASS_CHECK_EMPLOYEE, 'Игра НЕ прошла проверку сотрудником'),
+        (TYPE_START_RENT, 'Начало бронирования'),
+        (TYPE_FINISH_RENT, 'Конец бронирования'),
+        (TYPE_BUY, 'Купили игру')
+    )
+    slug = models.SlugField(unique=True)
+    status = models.CharField(max_length=100, verbose_name='Тип события', choices=TYPE_CHOICES, blank=True)
+    game_box = models.ForeignKey('GameBox', verbose_name='Игра', on_delete=models.CASCADE, null=True)
+   # rent = models.ForeignKey('Rent', verbose_name='Аренда', on_delete=models.CASCADE, null=True)
